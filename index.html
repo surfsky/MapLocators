@@ -1,0 +1,169 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>天地图定位拾取-SURFSKY-2021</title>
+    <meta name="about" content="https://blog.csdn.net/surfsky/article/details/106951716#comments_17805322"/>
+    <style>
+        body, html, #map {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            margin: 0;
+            padding: 0;
+        }
+        /* CARD */
+        .card {
+            display: flex;
+            flex: 1 1 auto;
+            -ms-flex: 1 1 auto;
+            flex-direction: column;
+
+            width: 7rem;
+            min-width: 0;
+            position: fixed;
+            bottom: 1rem;
+            right: 1rem;
+            padding: 0.5rem 0.5rem 0.5rem 1rem;
+
+            background-color: #fff;
+            background-clip: border-box;
+            border-width: 0;
+            border-radius: 1rem;
+
+            font-family: Arial;
+            word-wrap: break-word;
+            color: #0288d1;
+            display: block;
+            opacity: 0.8;
+            z-index: 999;
+        }
+        #btnClip{
+            background-color: transparent;
+            /*margin:auto;*/
+            font-size: 16px !important;
+            border: 0;
+        }
+    </style>
+    </style>
+    <script type="text/javascript" src="http://api.tianditu.gov.cn/api?v=3.0&tk=d47c49f80fad0ccf4812101231ddf00d"></script>
+    <script type="text/javascript" src="contents/clipboard.min.js"></script>
+    <script type="text/javascript" src="contents/toast.js"></script>
+</head>
+<body>
+    <div id="map"></div>
+    <div class="card">
+        <button id="btnClip">
+            <img src="contents/clippy.svg" width="20" height="20" alt="Copy to clipboard">
+            <span >复制坐标</span>
+        </button>
+    </div>
+</body>
+</html>
+<script>
+    // map
+    var center = new TLngLat(116.39141, 39.92348);
+    var map = new TMap("map");
+    map.centerAndZoom(center, 12);
+    map.enableHandleMouseScroll();
+    map.enableDoubleClickZoom();
+
+    // control
+    map.addControl(new TNavigationControl({
+        type: "TMAP_NAVIGATION_CONTROL_LARGE",
+        anchor: "TMAP_ANCHOR_TOP_LEFT",
+        offset: [0, 0],
+        showZoomInfo: true
+    }));
+    map.addControl(new TScaleControl());
+    map.addControl(new TMapTypeControl());
+
+    // marker & label
+    var marker = new TMarker(center);
+    marker.enableDragging();
+    map.addOverLay(marker);
+    var label = new TLabel({ offset: new TPixel(15, -20) });
+    map.addOverLay(label);
+    setMarkerAndLabel();
+
+    // map events
+    TEvent.addListener(map, "move", function (lnglat) { setMarkerAndLabel(); });
+    TEvent.addListener(map, "moveend", function (lnglat) {
+        setMarkerAndLabel();
+        // 逆地址解析
+        var geocode = new TGeocoder();
+        geocode.getLocation(lnglat, function (result) {
+            if (result.getStatus() == 0) {
+                var addr = result.getAddress();
+                showAddr(addr);
+            }
+        });
+    });
+
+    // set marker, label position and text
+    function setMarkerAndLabel() {
+        var lnglat = map.getCenter();
+        marker.setLngLat(lnglat);
+        label.setLabel(getText(lnglat));
+        label.setLngLat(lnglat);
+        showLngLat(lnglat.getLng(), lnglat.getLat());
+    }
+    function getText(lnglat) {
+        return lnglat.getLng() + ", " + lnglat.getLat();
+    }
+
+    // copy to clipboard
+    var clipboard = new ClipboardJS('#btnClip', {
+        text: function () {
+            return label.getLabel();
+        }
+    });
+    clipboard.on('success', function (e) {
+        toast("已复制到剪贴板: " + e.text, 1000);
+    });
+    clipboard.on('error', function (e) {
+        alert(e);
+    });
+
+
+    /*
+     * Exports
+     */
+    // 显示经度纬度，并反馈给 webview
+    function showLngLat(lng, lat) {
+    }
+
+    // 显示文本地址，并反馈给 webview
+    function showAddr(addr) {
+    }
+
+    // 将地图中心移到指定位置（暴露给webview调用）
+    function goto(lng, lat) {
+        var lnglat = new TLngLat(lng, lat);
+        map.panTo(lnglat);
+        setMarkerAndLabel();
+    }
+
+    // 查找并定位到指定的文本地址
+    function search(addr) {
+        var search = new TLocalSearch(map, {
+            pageCapacity: 1,
+            onSearchComplete: function (result) {
+                var ps = result.getPois();
+                if (ps.length > 0) {
+                    var lnglat = ps[0].lonlat;
+                    var n = lnglat.indexOf(' ');
+                    if (n != -1) {
+                        var lng = lnglat.substr(0, n);
+                        var lat = lnglat.substr(n + 1, lnglat.length - 1);
+                        goto(lng, lat);
+                    }
+                }
+            }
+        });
+        search.search(addr, 1);
+    }
+
+</script>
