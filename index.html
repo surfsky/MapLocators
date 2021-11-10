@@ -68,8 +68,6 @@
     var map = new TMap("map");
     var zoom = 12;
     map.centerAndZoom(center, zoom);
-    map.enableHandleMouseScroll();
-    map.enableDoubleClickZoom();
 
     // locator
     navigator.geolocation.getCurrentPosition(function (position) {
@@ -77,6 +75,8 @@
         var x = position.coords.latitude;//维度
         map.centerAndZoom(new TLngLat(y, x), zoom);
     });
+    map.enableHandleMouseScroll();
+    map.enableDoubleClickZoom();
 
     // control
     map.addControl(new TNavigationControl({
