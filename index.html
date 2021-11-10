@@ -64,16 +64,16 @@
 </html>
 <script>
     // map
-    var center = new TLngLat(116.39141, 39.92348);
     var map = new TMap("map");
+    var center = new TLngLat(116.39141, 39.92348);
     var zoom = 12;
-    map.centerAndZoom(center, zoom);
 
     // locator
+    map.centerAndZoom(center, zoom);
     navigator.geolocation.getCurrentPosition(function (position) {
-        var y = position.coords.longitude;//经度
-        var x = position.coords.latitude;//维度
-        map.centerAndZoom(new TLngLat(y, x), zoom);
+        var lng = position.coords.longitude;
+        var lat = position.coords.latitude;
+        map.centerAndZoom(new TLngLat(lng, lat), zoom);
     });
     map.enableHandleMouseScroll();
     map.enableDoubleClickZoom();
