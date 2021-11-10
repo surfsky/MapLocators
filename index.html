@@ -66,9 +66,17 @@
     // map
     var center = new TLngLat(116.39141, 39.92348);
     var map = new TMap("map");
-    map.centerAndZoom(center, 12);
+    var zoom = 12;
+    map.centerAndZoom(center, zoom);
     map.enableHandleMouseScroll();
     map.enableDoubleClickZoom();
+
+    // locator
+    navigator.geolocation.getCurrentPosition(function (position) {
+        var y = position.coords.longitude;//经度
+        var x = position.coords.latitude;//维度
+        map.centerAndZoom(new TLngLat(y, x), zoom);
+    });
 
     // control
     map.addControl(new TNavigationControl({
