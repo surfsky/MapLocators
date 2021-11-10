@@ -73,8 +73,9 @@
     navigator.geolocation.getCurrentPosition(function (position) {
         var lng = position.coords.longitude;
         var lat = position.coords.latitude;
-        map.centerAndZoom(new TLngLat(lng, lat), zoom);
+        map.panTo(new TLngLat(lng, lat), zoom);
     });
+    map.enableDrag();
     map.enableHandleMouseScroll();
     //map.enableDoubleClickZoom();
 
@@ -125,6 +126,7 @@
     // copy to clipboard
     var clipboard = new ClipboardJS('#btnClip', {
         text: function () {
+            alert(label.getLabel());
             return label.getLabel();
         }
     });
