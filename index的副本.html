@@ -14,53 +14,101 @@
             margin: 0;
             padding: 0;
         }
+        /* CARD */
+        .card {
+            display: flex;
+            flex: 1 1 auto;
+            -ms-flex: 1 1 auto;
+            flex-direction: column;
 
-
-        /* fixPanel */
-        .fixPanel {
-            display: block;
+            width: 7rem;
+            min-width: 0;
             position: fixed;
-            opacity: 0.8;
-            z-index: 999;
-            width: 1rem;
-            height: 1rem;
+            bottom: 1rem;
+            right: 1rem;
+            padding: 0.5rem 0.5rem 0.5rem 1rem;
+
+            background-color: #fff;
+            background-clip: border-box;
             border-width: 0;
             border-radius: 1rem;
 
+            font-family: Arial;
+            word-wrap: break-word;
+            color: #0288d1;
+            display: block;
+            opacity: 0.8;
+            z-index: 999;
+
+            cursor: pointer;
+        }
+        #btnClip{
+            background-color: transparent;
+            /*margin:auto;*/
+            font-size: 16px !important;
+            border: 0;
+        }
+
+
+        /* Locator */
+        .locator {
+            display: flex;
             flex: 1 1 auto;
+            -ms-flex: 1 1 auto;
             flex-direction: column;
 
+            width: 1rem;
+            height: 1rem;
+            min-width: 0;
+            position: fixed;
+            bottom: 5rem;
+            right: 1rem;
+            padding: 0.3rem 0.5rem 0.5rem 0.3rem;
+
             background-color: #fff;
-            color: #0288d1;
+            background-clip: border-box;
+            border-width: 0;
+            border-radius: 1rem;
+
             font-family: Arial;
-            word-wrap: normal;
-        }
+            word-wrap: break-word;
+            color: #0288d1;
+            display: block;
+            opacity: 0.8;
+            z-index: 999;
 
-        .locator{
-            bottom: 3rem;
-            right: 1rem;
-            padding: 0.3rem 0.5rem 0.5rem 0.3rem;
             cursor: pointer;
         }
 
-        .clipboard {
-            bottom: 1rem;
-            right: 1rem;
-            padding: 0.3rem 0.5rem 0.5rem 0.3rem;
-            cursor: pointer;
-        }
-
+        /* ZOOM INFO */
         .zoomInfo {
-            border-style: solid;
-            border-color: rgb(42, 65, 194);
-            border-width: 1px;
-            border-radius: 4px;
-            width: 0.65rem;
-            height: 0.65rem;
+            display: flex;
+            flex: 1 1 auto;
+            -ms-flex: 1 1 auto;
+            flex-direction: column;
+
+            width: 0.7rem;
+            height: 0.7rem;
+            min-width: 0;
+            position: fixed;
             top: 14rem;
             left: 1.6rem;
             padding: 0.2rem 0.2rem 0.2rem 0.2rem;
+
+            background-color: #fff;
+            background-clip: border-box;
+            border-width: 0;
+            border-radius: 1rem;
+            border-color: rgb(27, 80, 179);
+            border-width: 2px;
+
+            font-family: Arial;
             font-size: 11px !important;
+            word-wrap:normal;
+            color: #0288d1;
+            display: block;
+            opacity: 0.8;
+            z-index: 999;
         }
     </style>
     </style>
@@ -70,13 +118,16 @@
 </head>
 <body>
     <div id="map"></div>
-    <div class="fixPanel zoomInfo">
+    <div class="zoomInfo">
         <div id="zoomLevel">18</div>
     </div>
-    <div class="fixPanel clipboard" id="btnClip">
-        <img src="contents/clippy.svg" width="20" height="20" alt="Copy to clipboard">
+    <div class="card">
+        <button id="btnClip">
+            <img src="contents/clippy.svg" width="20" height="20" alt="Copy to clipboard">
+            <span >复制坐标</span>
+        </button>
     </div>
-    <div class="fixPanel locator" onclick="locate()">
+    <div class="locator" onclick="locate()">
         <img src="contents/locator.svg" width="20" height="20" alt="Move to current location">
     </div>
 </body>
@@ -93,6 +144,15 @@
     map.enableDrag();
     map.enableHandleMouseScroll();
     map.enableDoubleClickZoom();
+
+    // 跳到当前位置
+    function locate(){
+        navigator.geolocation.getCurrentPosition(function (position) {
+        var lng = position.coords.longitude;
+        var lat = position.coords.latitude;
+        map.panTo(new TLngLat(lng, lat), zoom);
+    });
+    }
 
     // control
     map.setMapType(TMAP_HYBRID_MAP);
@@ -127,10 +187,28 @@
         });
     });
 
+    // set marker, label position and text
+    function setMarkerAndLabel() {
+        var zoom = map.getZoom();
+        var zoomLabel = document.getElementById("zoomLevel");
+        zoomLabel.innerText = zoom;
+
+        var lnglat = map.getCenter();
+        marker.setLngLat(lnglat);
+        label.setLabel(getText(lnglat));
+        label.setLngLat(lnglat);
+        showLngLat(lnglat.getLng(), lnglat.getLat());
+    }
+    function getText(lnglat) {
+        return lnglat.getLng() + ", " + lnglat.getLat();
+    }
 
     // copy to clipboard
     var clipboard = new ClipboardJS('#btnClip', {
-        text: function () { return label.getLabel(); }
+        text: function () {
+            //alert(label.getLabel());
+            return label.getLabel();
+        }
     });
     clipboard.on('success', function (e) {
         toast("已复制到剪贴板: " + e.text, 1000);
@@ -161,47 +239,18 @@
         event.preventDefault();
     });
 
-
-    /**********************************************
-     * Functions
-     *********************************************/
-    // locate to current position
-    function locate(){
-        navigator.geolocation.getCurrentPosition(function (position) {
-            var zoom = map.getZoom();
-            var lng = position.coords.longitude;
-            var lat = position.coords.latitude;
-            map.panTo(new TLngLat(lng, lat), zoom);
-        });
-    }
-
-    // set marker, label position and text
-    function setMarkerAndLabel() {
-        var zoom = map.getZoom();
-        var zoomLabel = document.getElementById("zoomLevel");
-        zoomLabel.innerText = zoom;
-
-        var lnglat = map.getCenter();
-        marker.setLngLat(lnglat);
-        label.setLabel(getText(lnglat));
-        label.setLngLat(lnglat);
-        showLngLat(lnglat.getLng(), lnglat.getLat());
-    }
-
-    // lnglat text
-    function getText(lnglat) {
-        return lnglat.getLng() + ", " + lnglat.getLat();
-    }
-
-    // 显示经度纬度
+    /*
+     * Exports
+     */
+    // 显示经度纬度，并反馈给 webview
     function showLngLat(lng, lat) {
     }
 
-    // 显示文本地址
+    // 显示文本地址，并反馈给 webview
     function showAddr(addr) {
     }
 
-    // 将地图中心移到指定位置
+    // 将地图中心移到指定位置（暴露给webview调用）
     function goto(lng, lat) {
         var lnglat = new TLngLat(lng, lat);
         map.panTo(lnglat);
@@ -232,18 +281,16 @@
 <script>
 /*
 # TASK
-
+实现当前位置按钮
 实现输入坐标能力
 实现查询能力
 
 
 # HISTORY
-
 2021-11-15
     默认使用混合地图类型（遥感加道路文本注释）
     显示放缩级别
     阻止safari浏览器双击放大功能
-    实现跳到当前位置按钮
 
 2021-11-06
     初版
