@@ -112,9 +112,12 @@
             color: white;
         }
     </style>
-    <script type="text/javascript" src="https://api.tianditu.gov.cn/api?v=3.0&tk=d47c49f80fad0ccf4812101231ddf00d"></script>
+    <script type="text/javascript" src="https://api.tianditu.gov.cn/api?v=3.0&tk=2c71689b0e3d5d72314d4bfe1102d5c0"></script>
     <script type="text/javascript" src="contents/clipboard.min.js"></script>
     <script type="text/javascript" src="contents/toast.js"></script>
+
+    <script type="text/javascript" src="https://webapi.amap.com/maps?v=1.4.15&key=8f1b4bfa36143143452768fafbf3b8bd&plugin=AMap.Scale,AMap.OverView,AMap.ToolBar,AMap.Geocoder,AMap.MapType"></script>
+
 </head>
 <body>
     <div id="map"></div>
@@ -131,176 +134,23 @@
     -->
     <div class="card">
         <input id="tbAddr" type="text" value="" class="textbox" />
-        <button onclick="search()">查找</button>
+        <button onclick="searchTianditu()">天地图查找</button>
+        <button onclick="searchGaode()">高德查找</button>
         <button onclick="locate()">当前位置</button>
         <button id="btnClip">拷贝坐标</button>
     </div>
 </body>
 </html>
 <script>
-    // map
-    var map = new TMap("map");
-    var center = new TLngLat(116.39141, 39.92348);
-    var zoom = 12;
-
-    // locator
-    map.centerAndZoom(center, zoom);
-    locate();
-    map.enableDrag();
-    map.enableHandleMouseScroll();
-    map.enableDoubleClickZoom();
-
-    // control
-    map.setMapType(TMAP_HYBRID_MAP);
-    map.addControl(new TNavigationControl({
-        type: "TMAP_NAVIGATION_CONTROL_LARGE",
-        anchor: "TMAP_ANCHOR_TOP_LEFT",
-        offset: [0, 0],
-        showZoomInfo: true
-    }));
-    map.addControl(new TScaleControl());
-    map.addControl(new TMapTypeControl());
-
-    // marker & label
-    var marker = new TMarker(center);
-    marker.enableDragging();
-    map.addOverLay(marker);
-    var label = new TLabel({ offset: new TPixel(15, -20) });
-    map.addOverLay(label);
-    setMarkerAndLabel();
-
-    // map events
-    TEvent.addListener(map, "move", function (lnglat) { setMarkerAndLabel(); });
-    TEvent.addListener(map, "moveend", function (lnglat) {
-        setMarkerAndLabel();
-        // 逆地址解析
-        var geocode = new TGeocoder();
-        geocode.getLocation(lnglat, function (result) {
-            if (result.getStatus() == 0) {
-                var addr = result.getAddress();
-                showAddr(addr);
-            }
-        });
-    });
-
-
-    // copy to clipboard
-    var clipboard = new ClipboardJS('#btnClip', {
-        text: function () { return label.getLabel(); }
-    });
-    clipboard.on('success', function (e) {
-        toast("已复制到剪贴板: " + e.text, 1000);
-    });
-    clipboard.on('error', function (e) {
-        alert(e);
-    });
-
-    /*
-    // 阻止safari浏览器双击放大功能
-    let lastTouchEnd = 0  //更新手指弹起的时间
-    document.documentElement.addEventListener("touchstart", function (event) {
-        //多根手指同时按下屏幕，禁止默认行为
-        if (event.touches.length > 1) {
-          event.preventDefault();
-        }
-    });
-    document.documentElement.addEventListener("touchend", function (event) {
-        let now = (new Date()).getTime();
-        if (now - lastTouchEnd <= 300) {
-            //当两次手指弹起的时间小于300毫秒，认为双击屏幕行为
-            event.preventDefault();
-        }else{ // 否则重新手指弹起的时间
-            lastTouchEnd = now;
-        }
-    }, false);
-    */
-    // 阻止双指放大页面
-    document.documentElement.addEventListener("gesturestart", function (event) {
-        event.preventDefault();
-    });
-
-
-    /**********************************************
-     * Functions
-     *********************************************/
-    // locate to current position
-    function locate(){
-        navigator.geolocation.getCurrentPosition(function (position) {
-            var zoom = map.getZoom();
-            var lng = position.coords.longitude;
-            var lat = position.coords.latitude;
-            map.panTo(new TLngLat(lng, lat), zoom);
-        });
-    }
-
-    // set marker, label position and text
-    function setMarkerAndLabel() {
-        var zoom = map.getZoom();
-        var zoomLabel = document.getElementById("zoomLevel");
-        zoomLabel.innerText = zoom;
-
-        var lnglat = map.getCenter();
-        marker.setLngLat(lnglat);
-        label.setLabel(getText(lnglat));
-        label.setLngLat(lnglat);
-        showLngLat(lnglat.getLng(), lnglat.getLat());
-    }
-
-    // lnglat text
-    function getText(lnglat) {
-        return lnglat.getLng() + ", " + lnglat.getLat();
-    }
-
-    // 显示经度纬度
-    function showLngLat(lng, lat) {
-    }
-
-    // 显示文本地址
-    function showAddr(addr) {
-    }
-
-    // 将地图中心移到指定位置
-    function goto(lng, lat) {
-        var lnglat = new TLngLat(lng, lat);
-        map.panTo(lnglat);
-        setMarkerAndLabel();
-    }
-
-    // 查找并定位到指定的文本地址
-    function search() {
-        var addr = document.getElementById("tbAddr").value;
-        var search = new TLocalSearch(map, {
-            pageCapacity: 1,
-            onSearchComplete: function (result) {
-                var ps = result.getPois();
-                if (ps.length > 0) {
-                    var lnglat = ps[0].lonlat;
-                    var n = lnglat.indexOf(' ');
-                    if (n != -1) {
-                        var lng = lnglat.substr(0, n);
-                        var lat = lnglat.substr(n + 1, lnglat.length - 1);
-                        goto(lng, lat);
-                    }
-                }else{
-                    toast("找不到：" + addr, 1000);
-                }
-            }
-        });
-        search.search(addr, 1);
-    }
-
-</script>
-<script>
 /*
 # TASK
-
-实现查询能力
-实现输入坐标能力
-实现叠加网格
-实现叠加 WMS 图片层
-
+    实现输入坐标能力
+    实现叠加网格
+    实现叠加 WMS 图片层
 
 # HISTORY
+2022-01-04
+    实现搜索能力
 
 2021-11-15
     默认使用混合地图类型（遥感加道路文本注释）
@@ -310,6 +160,173 @@
 
 2021-11-06
     初版
-
 */
+
+// map
+var map = new TMap("map");
+var center = new TLngLat(116.39141, 39.92348);
+var zoom = 12;
+
+// locator
+map.centerAndZoom(center, zoom);
+locate();
+map.enableDrag();
+map.enableHandleMouseScroll();
+map.enableDoubleClickZoom();
+
+// control
+map.setMapType(TMAP_HYBRID_MAP);
+map.addControl(new TNavigationControl({
+    type: "TMAP_NAVIGATION_CONTROL_LARGE",
+    anchor: "TMAP_ANCHOR_TOP_LEFT",
+    offset: [0, 0],
+    showZoomInfo: true
+}));
+map.addControl(new TScaleControl());
+map.addControl(new TMapTypeControl());
+
+// marker & label
+var marker = new TMarker(center);
+marker.enableDragging();
+map.addOverLay(marker);
+var label = new TLabel({ offset: new TPixel(15, -20) });
+map.addOverLay(label);
+setMarkerAndLabel();
+
+// map events
+TEvent.addListener(map, "move", function (lnglat) { setMarkerAndLabel(); });
+TEvent.addListener(map, "moveend", function (lnglat) {
+    setMarkerAndLabel();
+    // 逆地址解析
+    var geocode = new TGeocoder();
+    geocode.getLocation(lnglat, function (result) {
+        if (result.getStatus() == 0) {
+            var addr = result.getAddress();
+            showAddr(addr);
+        }
+    });
+});
+
+
+// copy to clipboard
+var clipboard = new ClipboardJS('#btnClip', {
+    text: function () { return label.getLabel(); }
+});
+clipboard.on('success', function (e) {
+    toast("已复制到剪贴板: " + e.text, 1000);
+});
+clipboard.on('error', function (e) {
+    alert(e);
+});
+
+/*
+// 阻止safari浏览器双击放大功能
+let lastTouchEnd = 0  //更新手指弹起的时间
+document.documentElement.addEventListener("touchstart", function (event) {
+    //多根手指同时按下屏幕，禁止默认行为
+    if (event.touches.length > 1) {
+        event.preventDefault();
+    }
+});
+document.documentElement.addEventListener("touchend", function (event) {
+    let now = (new Date()).getTime();
+    if (now - lastTouchEnd <= 300) {
+        //当两次手指弹起的时间小于300毫秒，认为双击屏幕行为
+        event.preventDefault();
+    }else{ // 否则重新手指弹起的时间
+        lastTouchEnd = now;
+    }
+}, false);
+*/
+// 阻止双指放大页面
+document.documentElement.addEventListener("gesturestart", function (event) {
+    event.preventDefault();
+});
+
+
+/**********************************************
+ * Functions
+ *********************************************/
+// locate to current position
+function locate(){
+    navigator.geolocation.getCurrentPosition(function (position) {
+        var zoom = map.getZoom();
+        var lng = position.coords.longitude;
+        var lat = position.coords.latitude;
+        map.panTo(new TLngLat(lng, lat), zoom);
+    });
+}
+
+// set marker, label position and text
+function setMarkerAndLabel() {
+    var zoom = map.getZoom();
+    var zoomLabel = document.getElementById("zoomLevel");
+    zoomLabel.innerText = zoom;
+
+    var lnglat = map.getCenter();
+    marker.setLngLat(lnglat);
+    label.setLabel(getText(lnglat));
+    label.setLngLat(lnglat);
+    showLngLat(lnglat.getLng(), lnglat.getLat());
+}
+
+// lnglat text
+function getText(lnglat) {
+    return lnglat.getLng() + ", " + lnglat.getLat();
+}
+
+// 显示经度纬度
+function showLngLat(lng, lat) {
+}
+
+// 显示文本地址
+function showAddr(addr) {
+}
+
+// 将地图中心移到指定位置
+function goto(lng, lat) {
+    var lnglat = new TLngLat(lng, lat);
+    map.panTo(lnglat);
+    setMarkerAndLabel();
+}
+
+// 查找并定位到指定的文本地址
+function searchTianditu() {
+    var addr = document.getElementById("tbAddr").value;
+    var search = new TLocalSearch(map, {
+        pageCapacity: 1,
+        onSearchComplete: function (result) {
+            var ps = result.getPois();
+            if (ps.length > 0) {
+                var lnglat = ps[0].lonlat;
+                var n = lnglat.indexOf(' ');
+                if (n != -1) {
+                    var lng = lnglat.substr(0, n);
+                    var lat = lnglat.substr(n + 1, lnglat.length - 1);
+                    goto(lng, lat);
+                }
+            }else{
+                toast("找不到：" + addr, 1000);
+            }
+        }
+    });
+    search.search(addr, 1);
+}
+
+// 搜索文本地址（暴露给webview调用）
+function searchGaode() {
+    var addr = document.getElementById("tbAddr").value;
+    AMap.plugin('AMap.Geocoder', function () {
+        var geocoder = new AMap.Geocoder();
+        geocoder.getLocation(addr, function (status, result) {
+            if (status === 'complete' && result.info === 'OK') {
+                var p = result.geocodes[0].location;
+                var lng = p.getLng();
+                var lat = p.getLat();
+                goto(lng, lat);
+            }
+        })
+    })
+}
+
 </script>
