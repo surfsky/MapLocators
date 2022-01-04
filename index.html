@@ -290,7 +290,7 @@ function goto(lng, lat) {
     setMarkerAndLabel();
 }
 
-// 查找并定位到指定的文本地址
+// 查找文本地址（天地图）
 function searchTianditu() {
     var addr = document.getElementById("tbAddr").value;
     var search = new TLocalSearch(map, {
@@ -313,7 +313,7 @@ function searchTianditu() {
     search.search(addr, 1);
 }
 
-// 搜索文本地址（暴露给webview调用）
+// 搜索文本地址（高德）
 function searchGaode() {
     var addr = document.getElementById("tbAddr").value;
     AMap.plugin('AMap.Geocoder', function () {
