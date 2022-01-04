@@ -14,19 +14,7 @@
             margin: 0;
             padding: 0;
         }
-        .fixTop {
-            position:fixed; 
-            top:0px;    
-            left:50%; 
-            transform: translateX(-50%);
-        }
 
-        .fixBottom {
-            position: fixed;
-            bottom: 0px;
-            left: 50%;
-            transform: translateX(-50%);
-        }
 
         /* fixPanel */
         .fixPanel {
@@ -75,42 +63,7 @@
             font-size: 11px !important;
             text-align:center;
         }
-
-        /* CARD */
-        .card {
-            display: flex;
-            flex: 1 1 auto;
-            -ms-flex: 1 1 auto;
-            flex-direction: column;
-            /*width: 600px;*/
-            /*height: 24px;*/
-            position: fixed;
-            top: 8px;
-            left: 50%;
-            transform: translateX(-50%);
-            padding: 2px 5px;
-            background-color: #ffffff;
-            background-clip: border-box;
-            border-width: 0;
-            border-radius: 4px;
-            font-size: 12px;
-            font-family: Arial;
-            word-wrap: break-word;
-            color: #f5f6f7;
-            display: block;
-            opacity: 0.9;
-            z-index:9999;
-        }
-
-        .textbox {
-            width: 300px;
-            border-radius: 4px;
-            border-color: #808080;
-            border-width: 1px;
-            padding: 2px 5px 2px 5px;
-            background-color: gray;
-            color: white;
-        }
+    </style>
     </style>
     <script type="text/javascript" src="https://api.tianditu.gov.cn/api?v=3.0&tk=d47c49f80fad0ccf4812101231ddf00d"></script>
     <script type="text/javascript" src="contents/clipboard.min.js"></script>
@@ -121,19 +74,11 @@
     <div class="fixPanel zoomInfo">
         <div id="zoomLevel">18</div>
     </div>
-    <!--
     <div class="fixPanel clipboard" id="btnClip">
         <img src="contents/clippy.svg" width="20" height="20" alt="Copy to clipboard">
     </div>
     <div class="fixPanel locator" onclick="locate()">
         <img src="contents/locator.svg" width="20" height="20" alt="Move to current location">
-    </div>
-    -->
-    <div class="card">
-        <input id="tbAddr" type="text" value="" class="textbox" />
-        <button onclick="search()">查找</button>
-        <button onclick="locate()">当前位置</button>
-        <button id="btnClip">拷贝坐标</button>
     </div>
 </body>
 </html>
@@ -148,7 +93,7 @@
     locate();
     map.enableDrag();
     map.enableHandleMouseScroll();
-    map.enableDoubleClickZoom();
+    //map.enableDoubleClickZoom();
 
     // control
     map.setMapType(TMAP_HYBRID_MAP);
@@ -267,8 +212,7 @@
     }
 
     // 查找并定位到指定的文本地址
-    function search() {
-        var addr = document.getElementById("tbAddr").value;
+    function search(addr) {
         var search = new TLocalSearch(map, {
             pageCapacity: 1,
             onSearchComplete: function (result) {
@@ -281,8 +225,6 @@
                         var lat = lnglat.substr(n + 1, lnglat.length - 1);
                         goto(lng, lat);
                     }
-                }else{
-                    toast("找不到：" + addr, 1000);
                 }
             }
         });
@@ -294,10 +236,8 @@
 /*
 # TASK
 
-实现查询能力
 实现输入坐标能力
-实现叠加网格
-实现叠加 WMS 图片层
+实现查询能力
 
 
 # HISTORY
