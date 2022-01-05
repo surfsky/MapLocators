@@ -158,7 +158,7 @@
 
 # HISTORY
 2022-01-04
-    实现搜索能力
+    实现搜索能力（天地、腾讯、高德、百度）
 
 2021-11-15
     默认使用混合地图类型（遥感加道路文本注释）
@@ -307,7 +307,7 @@ function goto(lng, lat) {
 //----------------------------------------------
 // 查找
 //----------------------------------------------
-// 查找文本地址（天地图）
+// 搜索地址（天地图）
 function searchTianditu() {
     var addr = document.getElementById("tbAddr").value;
     var search = new TLocalSearch(map, {
@@ -330,7 +330,7 @@ function searchTianditu() {
     search.search(addr, 1);
 }
 
-// 搜索文本地址（高德）
+// 搜索地址（高德）
 function searchGaode() {
     var addr = document.getElementById("tbAddr").value;
     AMap.plugin('AMap.Geocoder', function () {
@@ -363,7 +363,7 @@ function searchBaidu() {
     }, "");
 }
 
-// 查找并定位到指定的文本地址
+// 搜索地址（腾讯）
 function searchTencent() {
     var addr = tbAddr.value;
     var geocoder = new qq.maps.Geocoder({
