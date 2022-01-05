@@ -32,7 +32,7 @@
         .fixPanel {
             display: block;
             position: fixed;
-            opacity: 0.8;
+            opacity: 0.9;
             z-index: 999;
             width: 1rem;
             height: 1rem;
@@ -102,21 +102,29 @@
             z-index:9999;
         }
 
-        .textbox {
-            width: 300px;
+        #tbAddr {
+            width: 220px;
             border-radius: 4px;
             border-color: #808080;
-            border-width: 1px;
+            border-width: 0px;
             padding: 2px 5px 2px 5px;
             background-color: gray;
             color: white;
+            outline: none;
+        }
+        #tbAddr :active {
+            border-width: 0px;
+            background-color: lightgreen;
         }
     </style>
-    <script type="text/javascript" src="https://api.tianditu.gov.cn/api?v=3.0&tk=2c71689b0e3d5d72314d4bfe1102d5c0"></script>
-    <script type="text/javascript" src="contents/clipboard.min.js"></script>
-    <script type="text/javascript" src="contents/toast.js"></script>
+    <script src="https://api.tianditu.gov.cn/api?v=3.0&tk=2c71689b0e3d5d72314d4bfe1102d5c0"></script>
+    <script src="contents/clipboard.min.js"></script>
+    <script src="contents/toast.js"></script>
 
-    <script type="text/javascript" src="https://webapi.amap.com/maps?v=1.4.15&key=8f1b4bfa36143143452768fafbf3b8bd&plugin=AMap.Scale,AMap.OverView,AMap.ToolBar,AMap.Geocoder,AMap.MapType"></script>
+    <script src="https://webapi.amap.com/maps?v=1.4.15&key=8f1b4bfa36143143452768fafbf3b8bd&plugin=AMap.Scale,AMap.OverView,AMap.ToolBar,AMap.Geocoder,AMap.MapType"></script>
+    <script src="https://api.map.baidu.com/api?v=2.0&ak=A60cece53af65e45e359f578c9e70d32"></script>
+    <script src="http://map.qq.com/api/js?v=2.exp&key=OB4BZ-D4W3U-B7VVO-4PJWW-6TKDJ-WPB77"></script>
+    <script src="https://3gimg.qq.com/lightmap/components/geolocation/geolocation.min.js"></script>
 
 </head>
 <body>
@@ -133,9 +141,11 @@
     </div>
     -->
     <div class="card">
-        <input id="tbAddr" type="text" value="" class="textbox" />
+        <input id="tbAddr" type="text" value="温州新田园" class="textbox" />
         <button onclick="searchTianditu()">天地图查找</button>
         <button onclick="searchGaode()">高德查找</button>
+        <button onclick="searchBaidu()">百度查找</button>
+        <button onclick="searchTencent()">腾讯查找</button>
         <button onclick="locate()">当前位置</button>
         <button id="btnClip">拷贝坐标</button>
     </div>
@@ -208,6 +218,9 @@ TEvent.addListener(map, "moveend", function (lnglat) {
 });
 
 
+//----------------------------------------------
+// 剪贴板
+//----------------------------------------------
 // copy to clipboard
 var clipboard = new ClipboardJS('#btnClip', {
     text: function () { return label.getLabel(); }
@@ -219,6 +232,9 @@ clipboard.on('error', function (e) {
     alert(e);
 });
 
+//----------------------------------------------
+// 双指缩放控制
+//----------------------------------------------
 /*
 // 阻止safari浏览器双击放大功能
 let lastTouchEnd = 0  //更新手指弹起的时间
@@ -290,6 +306,9 @@ function goto(lng, lat) {
     setMarkerAndLabel();
 }
 
+//----------------------------------------------
+// 查找
+//----------------------------------------------
 // 查找文本地址（天地图）
 function searchTianditu() {
     var addr = document.getElementById("tbAddr").value;
@@ -329,6 +348,39 @@ function searchGaode() {
             }
         })
     })
+}
+
+// 搜索地址（百度）
+function searchBaidu() {
+    var addr = document.getElementById("tbAddr").value;
+    var myGeo = new BMap.Geocoder();
+    myGeo.getPoint(addr, function (p) {
+        if (p) {
+            var lng = p.lng;
+            var lat = p.lat;
+            goto(lng, lat);
+        } else {
+            toast("找不到：" + addr, 1000);
+        }
+    }, "");
+}
+
+// 查找并定位到指定的文本地址
+function searchTencent() {
+    var addr = tbAddr.value;
+    var geocoder = new qq.maps.Geocoder({
+        complete: function (result) {
+            var p = result.detail.location;
+            if (p) {
+                var lng = p.lng;
+                var lat = p.lat;
+                goto(lng, lat);
+            } else {
+                toast("找不到：" + addr, 1000);
+            }
+        }
+    });
+    geocoder.getLocation(addr);
 }
 
 </script>
