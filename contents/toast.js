@@ -1,4 +1,12 @@
-function toast(msg,duration){
+/**
+ * Show toast message box
+ * @param {any} msg
+ * @param {any} duration
+ * @usage: toast("Hello world", 1000);
+ * surfsky.github.com 2022-01
+ */
+
+ function toast(msg,duration){
     duration = isNaN(duration)?3000:duration;
     var m = document.createElement('div');
     m.innerHTML = msg;
