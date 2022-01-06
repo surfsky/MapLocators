@@ -1,4 +1,31 @@
-﻿<!DOCTYPE html>
+﻿<!--
+# TASK
+    叠加社区网格
+
+# 注意
+    定位需要在网站环境 + https 环境下使用
+    高德、腾讯等地图需要网站环境下使用
+
+# Author
+    surfsky.github.com
+
+# HISTORY
+2022-01-04
+    实现搜索能力（天地、腾讯、高德、百度）
+    实现输入坐标能力
+
+2021-11-15
+    默认使用混合地图类型（遥感加道路文本注释）
+    显示放缩级别
+    阻止safari浏览器双击放大功能
+    实现跳到当前位置按钮
+
+2021-11-06
+    初版
+
+-->
+
+<!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8" />
@@ -103,7 +130,7 @@
         }
 
         #tbAddr {
-            width: 220px;
+            width: 160px;
             border-radius: 4px;
             border-color: #808080;
             border-width: 0px;
@@ -112,9 +139,15 @@
             color: white;
             outline: none;
         }
-        #tbAddr :active {
+        #tbPos {
+            width: 160px;
+            border-radius: 4px;
+            border-color: #808080;
             border-width: 0px;
-            background-color: lightgreen;
+            padding: 2px 5px 2px 5px;
+            background-color: gray;
+            color: white;
+            outline: none;
         }
     </style>
     <script src="https://api.tianditu.gov.cn/api?v=3.0&tk=2c71689b0e3d5d72314d4bfe1102d5c0"></script>
@@ -140,36 +173,18 @@
     -->
     <div class="card">
         <input id="tbAddr" type="text" value="温州新田园" class="textbox" />
-        <button onclick="searchTianditu()">天地图查找</button>
-        <button onclick="searchGaode()">高德查找</button>
-        <button onclick="searchBaidu()">百度查找</button>
-        <button onclick="searchTencent()">腾讯查找</button>
-        <button onclick="locate()">当前位置</button>
-        <button id="btnClip">拷贝坐标</button>
+        <button onclick="searchTianditu()">天地图</button>
+        <button onclick="searchGaode()">高德</button>
+        <button onclick="searchBaidu()">百度</button>
+        <button onclick="searchTencent()">腾讯</button>
+        <input id="tbPos" type="text" value="120.56591, 27.56139" class="textbox" />
+        <button onclick="gotoPos()">移动</button>
+        <button onclick="locate()">当前</button>
+        <button id="btnClip">拷贝</button>
     </div>
 </body>
 </html>
 <script>
-/*
-# TASK
-    实现输入坐标能力
-    实现叠加网格
-    实现叠加 WMS 图片层
-
-# HISTORY
-2022-01-04
-    实现搜索能力（天地、腾讯、高德、百度）
-
-2021-11-15
-    默认使用混合地图类型（遥感加道路文本注释）
-    显示放缩级别
-    阻止safari浏览器双击放大功能
-    实现跳到当前位置按钮
-
-2021-11-06
-    初版
-*/
-
 // map
 var map = new TMap("map");
 var center = new TLngLat(116.39141, 39.92348);
@@ -302,6 +317,15 @@ function goto(lng, lat) {
     var lnglat = new TLngLat(lng, lat);
     map.panTo(lnglat);
     setMarkerAndLabel();
+}
+function gotoPos(){
+    var pos = document.getElementById("tbPos").value;
+    var n = pos.indexOf(',');
+    if (n != -1){
+        var lng = pos.substr(0, n);
+        var lat = pos.substr(n+1);
+        goto(lng, lat);
+    }
 }
 
 //----------------------------------------------
