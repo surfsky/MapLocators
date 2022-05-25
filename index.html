@@ -50,9 +50,21 @@
 
         .fixBottom {
             position: fixed;
-            bottom: 0px;
+            bottom: 8px;
             left: 50%;
             transform: translateX(-50%);
+            padding: 2px 5px;
+            background-clip: border-box;
+            border-width: 0;
+            border-radius: 4px;
+            color: yellow;
+            text-shadow: -1px 1px 0 #000, 1px 1px 0 #000, 1px -1px 0 #000, -1px -1px 0 #000;
+            font-size: 12px;
+            font-family: Arial;
+            word-wrap: break-word;
+            display: block;
+            opacity: 0.9;
+            z-index:9999;
         }
 
         /* fixPanel */
@@ -183,6 +195,7 @@
         <button onclick="locate()">当前</button>
         <button id="btnClip">拷贝</button>
     </div>
+    <div class="fixBottom">更多定制版本请联系微信 surfsky</div>
 </body>
 </html>
 <script>
