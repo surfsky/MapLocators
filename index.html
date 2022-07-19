@@ -320,7 +320,7 @@ function setMarkerAndLabel() {
 
     var lnglat = map.getCenter();
     marker.setLngLat(lnglat);
-    label.setLabel(getText(lnglat) + "</br>" + getDFMText(lnglat));
+    label.setLabel(getText(lnglat) + " ｜ " + getDFMText(lnglat));
     label.setLngLat(lnglat);
     showLngLat(lnglat.getLng(), lnglat.getLat());
 }
