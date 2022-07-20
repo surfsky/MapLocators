@@ -1,0 +1,80 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Watermark control - Leaflet</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" type="image/x-icon" href="docs/images/favicon.ico" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A==" crossorigin="" />
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js" integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA==" crossorigin=""></script>
+    <style type="text/css">
+        body { padding: 0; margin: 0; }
+        html, body, #map { height: 100%;}
+    </style>
+</head>
+<body>
+    <div id='map'></div>
+</body>
+</html>
+
+<script type="text/javascript">
+    // map
+    var map = L.map('map', {
+        center: [40, 0],
+        zoom: 1
+    });
+
+    // layer
+    var positron = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
+        attribution: '&copy;  <a href="https://carto.com/attribution">CARTO</a>'
+    }).addTo(map);
+
+    // custom logo control
+    L.Control.Logo = L.Control.extend({
+        onAdd: function (map) {
+            var img = L.DomUtil.create('img');
+            img.src = 'images/logo.png';
+            img.style.width = '100px';
+            return img;
+        },
+        onRemove: function (map) {
+            // Nothing to do here
+        }
+    });
+    var logo = new L.Control.Logo({ position: 'bottomleft' }).addTo(map);
+
+
+    // custom control
+    var dom;
+    L.Control.Info = L.Control.extend({
+        onAdd: function (map) {
+            dom = L.DomUtil.create('div');
+            dom.innerHTML = 'HELLO WORLD';
+            dom.style.width = 200;
+            dom.style.height = 20;
+            dom.style.backgroundColor = 'white';
+            dom.style.borderRadius = 5;
+            // 需要加一个禁止事件穿透，否则没法拷贝
+            //dom.style.padding = 5;
+            //dom.style.margin = 5;
+            //dom.style = {
+            //    width: '200px',
+            //    backgroundColor: 'white',
+            //    padding: 5
+            //};
+            return dom;
+        }
+    });
+    var info = new L.Control.Info({ position: 'topright' }).addTo(map);
+
+
+    // 显示地图层级与中心点信息
+    map.on('move', showMapInfo);
+    map.on('zoomend', showMapInfo);
+    function showMapInfo() {
+        var zoom = map.getZoom(); //获取当前地图级别
+        var center = map.getCenter(); //获取当前地图中心位置
+        dom.innerText = zoom + ': ' + center.lng.toString() + ', ' + center.lat.toString();
+    }
+    showMapInfo();
+</script>

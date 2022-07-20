@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"></script>
+    <script src="https://cdn.bootcss.com/proj4js/2.4.3/proj4.js"></script>
+    <script src="https://cdn.bootcss.com/proj4leaflet/1.0.1/proj4leaflet.min.js"></script>
+    <script type="text/javascript" src='leaflet.ChineseTmsProviders.js'></script>
+    <style type="text/css">
+        body {
+            padding: 0;
+            margin: 0;
+        }
+        html, body, #map {
+            height: 100%;
+        }
+    </style>
+</head>
+
+<body>
+    <div id='map'></div>
+</body>
+</html>
+
+<script>
+    // point
+    var ct = new L.latLng(39.9244, 116.4035);
+    var tl = new L.latLng(39.9295, 116.398);
+    var tr = new L.latLng(39.9295, 116.409);
+    var br = new L.latLng(39.9193, 116.409);
+    var bl = new L.latLng(39.9193, 116.398);
+
+    // layers
+    var normM = L.tileLayer.chinaProvider('TianDiTu.Normal.Map',         { maxZoom: 20, minZoom: 5, key: 'd47c49f80fad0ccf4812101231ddf00d' });
+    var normA = L.tileLayer.chinaProvider('TianDiTu.Normal.Annotion',    { maxZoom: 20, minZoom: 5, key: 'd47c49f80fad0ccf4812101231ddf00d' });
+    var sateM = L.tileLayer.chinaProvider('TianDiTu.Satellite.Map',      { maxZoom: 20, minZoom: 5, key: 'd47c49f80fad0ccf4812101231ddf00d' });
+    var sateA = L.tileLayer.chinaProvider('TianDiTu.Satellite.Annotion', { maxZoom: 20, minZoom: 5, key: 'd47c49f80fad0ccf4812101231ddf00d' });
+    var baseLayers    = { "地图": normM, "影像": sateM };
+    var overlayLayers = { "白边标注": normA, "黑边标注": sateA };
+
+    // map
+    var map = L.map("map", {
+        center: ct,
+        zoom: 15,
+        layers: [sateM],
+        zoomControl: true,
+        scaleControl: true,
+        attribution: 'TianDiTu'
+    });
+
+    // layer controls
+    L.control.layers(baseLayers, overlayLayers).addTo(map);
+
+    // rect
+    var rect = L.polygon([tl, tr, br, bl]).addTo(map);
+
+    // image layer
+    var imgUrl = 'http://www.lib.utexas.edu/maps/historical/newark_nj_1922.jpg';
+    var imgBounds = [bl, tr];
+    var imgLayer = L.imageOverlay(imgUrl, imgBounds, { opacity: 0.5 }).addTo(map);
+
+    // markers
+    var icon1 = L.icon({
+        iconUrl: '/res/icon-a.png',
+        iconAnchor: [11, 24],
+        //iconSize: [16, 40],
+        //popupAnchor: [-3, -76],
+        //shadowUrl: 'my-icon-shadow.png',
+        //shadowSize: [68, 95],
+        //shadowAnchor: [22, 94]
+    });
+    var icon2 = L.icon({
+        iconUrl: '/res/icon-b.png',
+        iconAnchor: [11, 24],
+    });
+    var icon3 = L.icon({
+        iconUrl: '/res/icon-c.png',
+        iconAnchor: [11, 24],
+    });
+    var marker1 = L.marker(tl, { draggable: true, icon: icon1 }).addTo(map);
+    var marker2 = L.marker(br, { draggable: true, icon: icon2 }).addTo(map);
+    var marker3 = L.marker(ct, { draggable: true, icon: icon3 }).addTo(map);
+    setLabel(marker1);
+    setLabel(marker2);
+
+    // events
+    marker1.on('drag', function (e) { setRect(); setCenterMarker(); });
+    marker2.on('drag', function (e) { setRect(); setCenterMarker(); });
+    marker3.on('drag', function (e) { moveRect(); });
+
+
+    // 显示矩形（两个点、矩形图层、文本）
+    function setRect() {
+        var tl = marker1.getLatLng();
+        var br = marker2.getLatLng();
+        var bl = new L.latLng(br.lat, tl.lng);
+        var tr = new L.latLng(tl.lat, br.lng);
+        rect.setLatLngs([tl, tr, br, bl, tl]);
+        imgLayer.setBounds([bl, tr]);
+        setLabel(marker1);
+        setLabel(marker2);
+    }
+    function setLabel(marker) {
+        var p = marker.getLatLng();
+        var txt = p.lng + "," + p.lat;
+        marker.bindTooltip(txt).openTooltip();
+    }
+
+    // set center marker position
+    function setCenterMarker() {
+        var tl = marker1.getLatLng();
+        var br = marker2.getLatLng();
+        var ct2 = new L.latLng((tl.lat + br.lat) / 2, (tl.lng + br.lng) / 2);
+        marker3.setLatLng(ct2);
+        ct = ct2;
+    }
+
+    // set rect center
+    function moveRect() {
+        var tl = marker1.getLatLng();
+        var br = marker2.getLatLng();
+        var ct2 = marker3.getLatLng();
+        var offsetX = ct2.lng - ct.lng;
+        var offsetY = ct2.lat - ct.lat;
+        var tl2 = new L.latLng(tl.lat + offsetY, tl.lng + offsetX);
+        var br2 = new L.latLng(br.lat + offsetY, br.lng + offsetX);
+        marker1.setLatLng(tl2);
+        marker2.setLatLng(br2);
+        ct = marker3.getLatLng();
+
+        setRect();
+    }
+</script>

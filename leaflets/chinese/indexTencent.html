@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A==" crossorigin="" />
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js" integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA==" crossorigin=""></script>
+    <!-- 这两行 js 不能去掉-->
+    <script src="https://cdn.bootcss.com/proj4js/2.4.3/proj4.js"></script>
+    <script src="https://cdn.bootcss.com/proj4leaflet/1.0.1/proj4leaflet.min.js"></script>
+    <script src='leaflet.ChineseTmsProviders.js'></script>
+    <style type="text/css">
+        body { padding: 0; margin: 0; }
+        html, body, #map { height: 100%;}
+    </style>
+</head>
+
+<body>
+    <div id="map"></div>
+</body>
+</html>
+
+<script>
+    // map
+    var map = L.map("map", {
+        minZoom: 3,
+        maxZoom: 18,
+        attributionControl: true,
+        center: [31.59, 120.29],
+        zoom: 12
+    });
+
+    // 腾讯地图瓦片服务
+    var url3 = 'http://rt{s}.map.gtimg.com/realtimerender?z={z}&x={x}&y={y}&type=vector&style=0';
+    var layer = L.tileLayer(url3, { subdomains: '0123', tms: true }).addTo(map);
+
+    //var url = 'http://rt1.map.gtimg.com/realtimerender/?z={z}&x={x}&y={-y}&type=vector&style=1&v=1.1.1';
+    //var url2 = 'http://rt0.map.gtimg.com/realtimerender?z={z}&x={x}&y={-y}&type=vector&style=0';
+    //L.tileLayer(url, { 
+    //    maxZoom: 18,
+    //    attribution: '右下角文字',
+    //    id: 'mapbox.streets'
+    //}).addTo(map);
+
+    // layer control 基础图层（单选）、叠加图层（可复选）
+    //var baseLayers = {
+    //    "地图": L.tileLayer.chinaProvider('Baidu.Normal.Map', { maxZoom: 18, minZoom: 5 }),
+    //    "影像": L.tileLayer.chinaProvider('Baidu.Satellite.Map', { maxZoom: 18, minZoom: 5 })
+    //}
+    //var overlayLayers = {
+    //    "标注": L.tileLayer.chinaProvider('Baidu.Satellite.Annotion', { maxZoom: 18, minZoom: 5 })
+    //}
+    //L.control.layers(baseLayers, overlayLayers).addTo(map);
+    //
+    //// default layer
+    //baseLayers.地图.addTo(map);
+</script>
+
